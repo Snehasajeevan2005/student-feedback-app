@@ -1,35 +1,55 @@
 # --------------------------
 # Stage 1: Build React frontend
 # --------------------------
-FROM node:18 AS frontend-build
+FROM node:20 AS frontend-build
+
+# Set working directory
 WORKDIR /app/frontend
 
-# Copy frontend package.json and install dependencies
+# Copy package files and install dependencies
 COPY frontend/package*.json ./
 RUN npm install
 
-# Copy the rest of frontend code and build React
+# Copy the rest of the frontend code
 COPY frontend/ ./
+
+# Fix permissions for react-scripts (to avoid 'Permission denied')
+RUN chmod +x node_modules/.bin/react-scripts
+
+# Build React app
 RUN npm run build
 
 # --------------------------
-# Stage 2: Build Node.js backend
+# Stage 2: Backend setup
 # --------------------------
-FROM node:18
+FROM node:20 AS backend-build
+
+# Set working directory
 WORKDIR /app/backend
 
-# Copy backend package.json and install dependencies
+# Copy package files and install dependencies
 COPY backend/package*.json ./
 RUN npm install
 
 # Copy backend code
 COPY backend/ ./
 
-# Copy React build into backend's public folder (Node serves it)
-COPY --from=frontend-build /app/frontend/build ./public
+# --------------------------
+# Stage 3: Final image
+# --------------------------
+FROM node:20
 
-# Expose the port your backend listens on
+# Set working directory
+WORKDIR /app
+
+# Copy backend from build stage
+COPY --from=backend-build /app/backend ./backend
+
+# Copy frontend build output
+COPY --from=frontend-build /app/frontend/build ./frontend/build
+
+# Expose your backend port
 EXPOSE 5000
 
 # Start the backend server
-CMD ["node", "server.js"]
+CMD ["node", "backend/index.js"]
