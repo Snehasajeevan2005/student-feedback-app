@@ -1,39 +1,32 @@
-name: Terraform Azure Resource Group
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0"
+    }
+  }
+  required_version = ">= 1.3.0"
+}
 
-on:
-  push:
-    branches:
-      - main
+provider "azurerm" {
+  features {}
 
-jobs:
-  terraform:
-    runs-on: ubuntu-latest
+  client_id       = jsondecode(var.azure_credentials)["clientId"]
+  client_secret   = jsondecode(var.azure_credentials)["clientSecret"]
+  subscription_id = jsondecode(var.azure_credentials)["subscriptionId"]
+  tenant_id       = jsondecode(var.azure_credentials)["tenantId"]
+}
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+variable "azure_credentials" {
+  type = string
+}
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.9.0
+resource "random_integer" "suffix" {
+  min = 1000
+  max = 9999
+}
 
-      - name: Terraform Init
-        env:
-          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-        run: |
-          echo "variable \"azure_credentials\" {}" > terraform.tfvars
-          echo "azure_credentials = <<EOF" >> terraform.tfvars
-          echo "${AZURE_CREDENTIALS}" >> terraform.tfvars
-          echo "EOF" >> terraform.tfvars
-          terraform init
-
-      - name: Terraform Plan
-        env:
-          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-        run: terraform plan -var="azure_credentials=${AZURE_CREDENTIALS}"
-
-      - name: Terraform Apply
-        env:
-          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-        run: terraform apply -auto-approve -var="azure_credentials=${AZURE_CREDENTIALS}"
+resource "azurerm_resource_group" "example" {
+  name     = "rg-test-${random_integer.suffix.result}"
+  location = "East US"
+}
