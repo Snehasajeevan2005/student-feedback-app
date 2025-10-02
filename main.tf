@@ -1,4 +1,12 @@
 # ========================
+# Variables
+# ========================
+variable "azure_credentials" {
+  type        = string
+  description = "Azure service principal credentials in JSON format"
+}
+
+# ========================
 # Configure Azure Provider
 # ========================
 terraform {
@@ -13,25 +21,31 @@ terraform {
 
 provider "azurerm" {
   features {}
+
+  # Authenticate using service principal from JSON secret
+  tenant_id       = jsondecode(var.azure_credentials)["tenantId"]
+  subscription_id = jsondecode(var.azure_credentials)["subscriptionId"]
+  client_id       = jsondecode(var.azure_credentials)["clientId"]
+  client_secret   = jsondecode(var.azure_credentials)["clientSecret"]
 }
 
 # ========================
 # Use Existing Resource Group
 # ========================
 data "azurerm_resource_group" "existing" {
-  name = "sneha"  # your existing RG
+  name = "sneha"  # Replace with your actual RG name
 }
 
 # ========================
 # Reference Existing Cosmos DB
 # ========================
 data "azurerm_cosmosdb_account" "existing_cosmos" {
-  name                = "cosmosdbac"  # replace with your Cosmos DB name
+  name                = "cosmosdbac"  # Replace with your Cosmos DB name
   resource_group_name = data.azurerm_resource_group.existing.name
 }
 
 # ========================
-# Mock AKS Cluster (for plan/demo purposes only)
+# Demo placeholder for AKS (plan/demo purposes)
 # ========================
 resource "azurerm_resource_group" "aks_demo_placeholder" {
   name     = "aks-demo-placeholder"
