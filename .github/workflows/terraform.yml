@@ -22,8 +22,7 @@ jobs:
         env:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
         run: |
-          echo 'variable "azure_credentials" {}' > terraform.tfvars
-          echo "azure_credentials = <<EOF" >> terraform.tfvars
+          echo "azure_credentials = <<EOF" > terraform.tfvars
           echo "${AZURE_CREDENTIALS}" >> terraform.tfvars
           echo "EOF" >> terraform.tfvars
           terraform init
