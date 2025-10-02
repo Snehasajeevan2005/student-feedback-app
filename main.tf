@@ -29,8 +29,4 @@ resource "random_integer" "suffix" {
 resource "azurerm_resource_group" "example" {
   name     = "rg-test-${random_integer.suffix.result}"
   location = "East US"
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 634e11d8b739b9c27470443e5f6c022bb9a207c0
