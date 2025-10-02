@@ -22,7 +22,7 @@ terraform {
 provider "azurerm" {
   features {}
 
-  # Authenticate using service principal from JSON secret
+  # Parse JSON secret for authentication
   tenant_id       = jsondecode(var.azure_credentials)["tenantId"]
   subscription_id = jsondecode(var.azure_credentials)["subscriptionId"]
   client_id       = jsondecode(var.azure_credentials)["clientId"]
@@ -40,12 +40,12 @@ data "azurerm_resource_group" "existing" {
 # Reference Existing Cosmos DB
 # ========================
 data "azurerm_cosmosdb_account" "existing_cosmos" {
-  name                = "cosmosdbac"  # Replace with your Cosmos DB name
+  name                = "YOUR_COSMOS_DB_NAME"  # Replace with your Cosmos DB name
   resource_group_name = data.azurerm_resource_group.existing.name
 }
 
 # ========================
-# Demo placeholder for AKS (plan/demo purposes)
+# Placeholder AKS Resource Group (demo only)
 # ========================
 resource "azurerm_resource_group" "aks_demo_placeholder" {
   name     = "aks-demo-placeholder"
@@ -60,7 +60,7 @@ resource "azurerm_resource_group" "aks_demo_placeholder" {
 # ========================
 output "cosmos_endpoint" {
   value       = data.azurerm_cosmosdb_account.existing_cosmos.endpoint
-  description = "Existing Cosmos DB endpoint"
+  description = "cosmosdbac"
 }
 
 output "aks_demo_note" {
