@@ -52,4 +52,4 @@ COPY --from=frontend-build /app/frontend/build ./frontend/build
 EXPOSE 5000
 
 # Start the backend server
-CMD ["node", "backend/index.js"]
+CMD ["node", "backend/server.js"]
