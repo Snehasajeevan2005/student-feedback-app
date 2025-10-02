@@ -1,68 +1,39 @@
-# ========================
-# Variables
-# ========================
-variable "azure_credentials" {
-  type        = string
-  description = "Azure service principal credentials in JSON format"
-}
+name: Terraform Azure Resource Group
 
-# ========================
-# Configure Azure Provider
-# ========================
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.0"
-    }
-  }
-  required_version = ">= 1.3.0"
-}
+on:
+  push:
+    branches:
+      - main
 
-provider "azurerm" {
-  features {}
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
 
-  # Parse JSON secret for authentication
-  tenant_id       = jsondecode(var.azure_credentials)["tenantId"]
-  subscription_id = jsondecode(var.azure_credentials)["subscriptionId"]
-  client_id       = jsondecode(var.azure_credentials)["clientId"]
-  client_secret   = jsondecode(var.azure_credentials)["clientSecret"]
-}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-# ========================
-# Use Existing Resource Group
-# ========================
-data "azurerm_resource_group" "existing" {
-  name = "sneha"  # Replace with your actual RG name
-}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.9.0
 
-# ========================
-# Reference Existing Cosmos DB
-# ========================
-data "azurerm_cosmosdb_account" "existing_cosmos" {
-  name                = "YOUR_COSMOS_DB_NAME"  # Replace with your Cosmos DB name
-  resource_group_name = data.azurerm_resource_group.existing.name
-}
+      - name: Terraform Init
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          echo "variable \"azure_credentials\" {}" > terraform.tfvars
+          echo "azure_credentials = <<EOF" >> terraform.tfvars
+          echo "${AZURE_CREDENTIALS}" >> terraform.tfvars
+          echo "EOF" >> terraform.tfvars
+          terraform init
 
-# ========================
-# Placeholder AKS Resource Group (demo only)
-# ========================
-resource "azurerm_resource_group" "aks_demo_placeholder" {
-  name     = "aks-demo-placeholder"
-  location = data.azurerm_resource_group.existing.location
-  tags = {
-    environment = "demo"
-  }
-}
+      - name: Terraform Plan
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: terraform plan -var="azure_credentials=${AZURE_CREDENTIALS}"
 
-# ========================
-# Outputs
-# ========================
-output "cosmos_endpoint" {
-  value       = data.azurerm_cosmosdb_account.existing_cosmos.endpoint
-  description = "cosmosdbac"
-}
-
-output "aks_demo_note" {
-  value       = "AKS cluster cannot be created due to subscription policy; placeholder RG used for demo"
-}
+      - name: Terraform Apply
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: terraform apply -auto-approve -var="azure_credentials=${AZURE_CREDENTIALS}"
