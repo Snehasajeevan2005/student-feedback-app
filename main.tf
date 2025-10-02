@@ -19,7 +19,7 @@ provider "azurerm" {
 # Use Existing Resource Group
 # ========================
 data "azurerm_resource_group" "existing" {
-  name = "aks-demo"
+  name = "demo"
 }
 
 # ========================
