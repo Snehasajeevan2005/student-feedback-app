@@ -26,47 +26,29 @@ data "azurerm_resource_group" "existing" {
 # Reference Existing Cosmos DB
 # ========================
 data "azurerm_cosmosdb_account" "existing_cosmos" {
-  name                = "cosmosdbac"  # replace with your actual Cosmos DB name
+  name                = "cosmosdbac"  # replace with your Cosmos DB name
   resource_group_name = data.azurerm_resource_group.existing.name
 }
 
 # ========================
-# AKS Cluster (plan-only demo)
+# Mock AKS Cluster (for plan/demo purposes only)
 # ========================
-resource "azurerm_kubernetes_cluster" "aks_cluster" {
-  name                = "myAKSCluster"
-  location            = data.azurerm_resource_group.existing.location
-  resource_group_name = data.azurerm_resource_group.existing.name
-  dns_prefix          = "akscluster"
-
-  default_node_pool {
-    name       = "default"
-    node_count = 2
-    vm_size    = "Standard_DS2_v2"
-  }
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  network_profile {
-    network_plugin    = "azure"
-    load_balancer_sku = "standard"
-  }
-
+resource "azurerm_resource_group" "aks_demo_placeholder" {
+  name     = "aks-demo-placeholder"
+  location = data.azurerm_resource_group.existing.location
   tags = {
     environment = "demo"
   }
 }
 
 # ========================
-# Outputs for Demo
+# Outputs
 # ========================
-output "kube_config" {
-  value     = azurerm_kubernetes_cluster.aks_cluster.kube_config_raw
-  sensitive = true
+output "cosmos_endpoint" {
+  value       = data.azurerm_cosmosdb_account.existing_cosmos.endpoint
+  description = "Existing Cosmos DB endpoint"
 }
 
-output "cosmos_endpoint" {
-  value = data.azurerm_cosmosdb_account.existing_cosmos.endpoint
+output "aks_demo_note" {
+  value       = "AKS cluster cannot be created due to subscription policy; placeholder RG used for demo"
 }
