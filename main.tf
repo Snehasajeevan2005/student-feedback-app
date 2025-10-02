@@ -1,6 +1,3 @@
-# ========================
-# Configure Azure Provider
-# ========================
 terraform {
   required_providers {
     azurerm = {
@@ -11,57 +8,25 @@ terraform {
   required_version = ">= 1.3.0"
 }
 
-# ========================
-# Variables
-# ========================
-variable "azure_credentials" {
-  type        = string
-  description = "Azure service principal credentials in JSON format"
-}
-
 provider "azurerm" {
   features {}
 
-  tenant_id       = jsondecode(var.azure_credentials)["tenantId"]
-  subscription_id = jsondecode(var.azure_credentials)["subscriptionId"]
   client_id       = jsondecode(var.azure_credentials)["clientId"]
   client_secret   = jsondecode(var.azure_credentials)["clientSecret"]
+  subscription_id = jsondecode(var.azure_credentials)["subscriptionId"]
+  tenant_id       = jsondecode(var.azure_credentials)["tenantId"]
 }
 
-# ========================
-# Use Existing Resource Group
-# ========================
-data "azurerm_resource_group" "existing" {
-  name = "sneha"  # Replace with your actual resource group name
+variable "azure_credentials" {
+  type = string
 }
 
-# ========================
-# Reference Existing Cosmos DB
-# ========================
-data "azurerm_cosmosdb_account" "existing_cosmos" {
-  name                = "cosmosdbac"  # Replace with your Cosmos DB name
-  resource_group_name = data.azurerm_resource_group.existing.name
+resource "random_integer" "suffix" {
+  min = 1000
+  max = 9999
 }
 
-# ========================
-# Demo placeholder (for AKS)
-# ========================
-resource "azurerm_resource_group" "aks_demo_placeholder" {
-  name     = "aks-demo-placeholder"
-  location = data.azurerm_resource_group.existing.location
-  tags = {
-    environment = "demo"
-  }
-}
-
-# ========================
-# Outputs
-# ========================
-output "cosmos_endpoint" {
-  value       = data.azurerm_cosmosdb_account.existing_cosmos.endpoint
-  description = "Existing Cosmos DB endpoint"
-}
-
-output "aks_demo_note" {
-  value       = "AKS cluster cannot be created due to subscription policy; placeholder RG used for demo"
+resource "azurerm_resource_group" "example" {
+  name     = "rg-test-${random_integer.suffix.result}"
+  location = "East US"
 }
