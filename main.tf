@@ -19,11 +19,19 @@ provider "azurerm" {
 # Use Existing Resource Group
 # ========================
 data "azurerm_resource_group" "existing" {
-  name = "demo4"
+  name = "sneha"  # your existing RG
 }
 
 # ========================
-# Create AKS Cluster
+# Reference Existing Cosmos DB
+# ========================
+data "azurerm_cosmosdb_account" "existing_cosmos" {
+  name                = "cosmosdbac"  # replace with your actual Cosmos DB name
+  resource_group_name = data.azurerm_resource_group.existing.name
+}
+
+# ========================
+# AKS Cluster (plan-only demo)
 # ========================
 resource "azurerm_kubernetes_cluster" "aks_cluster" {
   name                = "myAKSCluster"
@@ -35,7 +43,6 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     name       = "default"
     node_count = 2
     vm_size    = "Standard_DS2_v2"
-    # vnet_subnet_id removed for default networking
   }
 
   identity {
@@ -48,14 +55,18 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   }
 
   tags = {
-    environment = "main"
+    environment = "demo"
   }
 }
 
 # ========================
-# Output AKS Credentials
+# Outputs for Demo
 # ========================
 output "kube_config" {
   value     = azurerm_kubernetes_cluster.aks_cluster.kube_config_raw
   sensitive = true
+}
+
+output "cosmos_endpoint" {
+  value = data.azurerm_cosmosdb_account.existing_cosmos.endpoint
 }
