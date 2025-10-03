@@ -21,7 +21,8 @@ FROM node:20-alpine AS backend-build
 WORKDIR /app/backend
 
 COPY backend/package*.json ./
-RUN npm install --only=production
+RUN npm install
+
 
 COPY backend/ ./
 
