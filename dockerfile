@@ -7,7 +7,7 @@ WORKDIR /app/frontend
 
 # Install dependencies
 COPY frontend/package*.json ./
-RUN npm install --only=production
+RUN npm install
 
 # Copy frontend source and build
 COPY frontend/ ./
@@ -21,8 +21,7 @@ FROM node:20-alpine AS backend-build
 WORKDIR /app/backend
 
 COPY backend/package*.json ./
-RUN npm install
-
+RUN npm install --only=production
 
 COPY backend/ ./
 
