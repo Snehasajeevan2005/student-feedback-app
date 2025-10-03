@@ -5,12 +5,16 @@ FROM node:20-alpine AS frontend-build
 
 WORKDIR /app/frontend
 
-# Install all dependencies (including dev dependencies for build)
+# Copy frontend package files
 COPY frontend/package*.json ./
+
+# Install all dependencies
 RUN npm install
 
-# Copy frontend source and build
+# Copy frontend source code
 COPY frontend/ ./
+
+# Build frontend
 RUN npm run build
 
 # --------------------------
@@ -20,11 +24,13 @@ FROM node:20-alpine AS backend-build
 
 WORKDIR /app/backend
 
-# Install only production dependencies
+# Copy backend package files
 COPY backend/package*.json ./
-RUN npm install --only=production
 
-# Copy backend source
+# Install production dependencies only
+RUN npm install --omit=dev
+
+# Copy backend source code
 COPY backend/ ./
 
 # --------------------------
