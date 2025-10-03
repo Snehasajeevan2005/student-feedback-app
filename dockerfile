@@ -5,11 +5,11 @@ FROM node:20-alpine AS frontend-build
 
 WORKDIR /app/frontend
 
-# Install deps only
+# Install dependencies
 COPY frontend/package*.json ./
 RUN npm install --only=production
 
-# Copy source and build
+# Copy frontend source and build
 COPY frontend/ ./
 RUN npm run build
 
@@ -35,13 +35,15 @@ WORKDIR /app
 # Copy backend
 COPY --from=backend-build /app/backend ./backend
 
-# Copy built frontend
+# Copy frontend build
 COPY --from=frontend-build /app/frontend/build ./frontend/build
 
-# Cleanup logs at startup
+# Copy cleanup script
 COPY cleanup.sh /cleanup.sh
 RUN chmod +x /cleanup.sh
 
+# Expose backend port
 EXPOSE 5000
 
+# Start container with log cleanup and backend server
 CMD ["/bin/sh", "-c", "/cleanup.sh && node backend/server.js"]
